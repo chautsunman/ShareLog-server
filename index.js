@@ -1,6 +1,12 @@
 const express = require('express');
+const cors = require('cors')({
+  origin: true,
+  credentials: true
+});
 
 const app = express();
+
+app.use(cors);
 
 var admin = require("firebase-admin");
 
@@ -41,6 +47,10 @@ app.get('/api/logs', (req, res) => {
   ref.once('value')
       .then((logsSnapshot) => {
         let logs = logsSnapshot.val();
+
+        for (let logId in logs) {
+          logs[logId].key = logId;
+        }
 
         res.status(200).json(logs);
       })
