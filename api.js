@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const cors = require('cors')({
   origin: true,
   credentials: true
@@ -54,6 +55,42 @@ router.get('/logs', (req, res) => {
         console.log(error);
 
         res.sendStatus(500);
+      });
+});
+
+router.get('/log', bodyParser.urlencoded(), (req, res) => {
+  let ref = admin.database().ref(`/log/${req.user.uid}/${req.query.logId}`);
+
+  ref.once('value')
+      .then((logSnapshot) => {
+        let log = logSnapshot.val();
+
+        res.status(200).json({success: true, log: log});
+      })
+      .catch((error) => {
+        console.log(error);
+
+        res.status(200).json({success: false});
+      });
+});
+
+router.post('/log', bodyParser.json(), (req, res) => {
+  let ref = admin.database().ref(`/log/${req.user.uid}`);
+
+  if (req.body.logId) {
+    ref = ref.child(req.body.logId);
+  } else {
+    ref = ref.push();
+  }
+
+  ref.set(req.body.log)
+      .then(() => {
+        res.status(200).json({success: true});
+      })
+      .catch((error) => {
+        console.log(error);
+
+        res.status(200).json({success: false});
       });
 });
 
